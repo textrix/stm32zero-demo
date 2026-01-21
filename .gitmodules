@@ -1,0 +1,3 @@
+[submodule "STM32ZERO"]
+	path = STM32ZERO
+	url = https://github.com/textrix/stm32zero.git
