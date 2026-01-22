@@ -12,7 +12,8 @@ NUCLEO-H753ZI 개발 보드 (STM32H753ZIT6, Cortex-M7) 데모 프로젝트.
 
 **데모 기능:**
 - TIM3/TIM4/TIM12 캐스케이드 연결 마이크로초 타이머 (`ustim`)
-- USART3 DMA 기반 디버그 출력
+- USART3 DMA 기반 stdout (`sout`)
+- readline이 포함된 DMA 기반 stdin (`sin`)
 - DTCM RAM에 FreeRTOS 정적 태스크 생성
 - 섹션 배치 매크로 (`STM32ZERO_DTCM`)
 
@@ -41,7 +42,7 @@ STM32ZERO-DEMO/
 
 ```bash
 cd STM32ZERO-DEMO-NUCLEO-H753ZI
-cmake -B build -G Ninja
+cmake --preset Debug
 cmake --build build/Debug
 ```
 
