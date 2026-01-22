@@ -6,7 +6,8 @@
 #include "cmsis_os.h"
 #include "stm32zero.hpp"
 #include "stm32zero-ustim.hpp"
-#include "stm32zero-debug.hpp"
+#include "stm32zero-sout.hpp"
+#include "stm32zero-sin.hpp"
 #include "stm32zero-freertos.hpp"
 #include <cstdio>
 
@@ -14,17 +15,28 @@ using namespace stm32zero;
 using namespace stm32zero::freertos;
 
 // Static task in DTCM (zero heap allocation, fast access)
-STM32ZERO_DTCM static StaticTask<256> system_task_;  // 256 words = 1024 bytes
+STM32ZERO_DTCM static StaticTask<512> system_task_;  // 256 words = 1024 bytes
 
 static __NO_RETURN void SYSTEM_task_func_(void* arg)
 {
-	uint32_t count = 0;
 	(void)arg;
 
 	while (true) {
-		uint64_t t = ustim::get();
-		printf("%lu.%06lu %lu SYSTEM task running...\r\n", (uint32_t)(t / 1000000), (uint32_t)(t % 1000000), count++);
-		vTaskDelay(10); // Delay for 1 second
+		uint32_t start = xTaskGetTickCount();
+
+		//uint64_t t = ustim::get();
+		//printf("%lu.%06lu %lu SYSTEM task running...\r\n", (uint32_t)(t / 1000000), (uint32_t)(t % 1000000), count++);
+
+		char buffer[128];
+		int r = sin::readline(buffer, sizeof buffer, 100);
+
+		if (0 <= r) {
+			printf("%s\r\n", buffer);
+			vTaskDelayUntil(&start, 100);
+		}
+		else { // timeout
+
+		}
 	}
 }
 
@@ -71,7 +83,8 @@ static __NO_RETURN void INIT_task_func_(void* arg)
 extern "C" __NO_RETURN void app_init(void)
 {
 	stm32zero::ustim::init();
-	stm32zero::debug::init();
+	stm32zero::sout::init();
+	stm32zero::sin::init();
 
 	// RTOS initialization and start (does not return)
 	osKernelInitialize();
