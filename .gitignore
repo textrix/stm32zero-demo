@@ -1,0 +1,45 @@
+# Build outputs
+build/
+Debug/
+Release/
+
+# STM32CubeMX
+.mxproject
+
+# IDE files - STM32CubeIDE (Eclipse)
+.settings/
+*.launch
+.cproject
+.project
+
+# IDE files - IAR EWARM
+*.bak
+*.dep
+*.ewd.user
+*.ewp.user
+*.ewt
+EWARM/settings/
+EWARM/Debug/
+EWARM/Release/
+
+# Compiled files
+*.o
+*.obj
+*.elf
+*.bin
+*.hex
+*.map
+*.list
+
+# Dependencies
+*.d
+
+# Editor
+*.swp
+*~
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db

@@ -1,0 +1,206 @@
+/*
+******************************************************************************
+**
+**  File        : LinkerScript.ld
+**
+**  Author      : STM32CubeMX
+**
+**  Abstract    : Linker script for STM32H753ZITx series
+**                2048Kbytes FLASH and 1056Kbytes RAM
+**
+**  Target      : STMicroelectronics STM32
+**
+*****************************************************************************
+*/
+
+/* Entry Point */
+ENTRY(Reset_Handler)
+
+/* Highest address of the user mode stack */
+_estack = ORIGIN(AXISRAM) + LENGTH(AXISRAM);    /* end of RAM */
+/* Generate a link error if heap and stack don't fit into RAM */
+_Min_Heap_Size = 0x200;      /* required amount of heap  */
+_Min_Stack_Size = 0x400; /* required amount of stack */
+
+/* Specify the memory areas */
+MEMORY
+{
+  ITCMRAM (xrw)  : ORIGIN = 0x00000000, LENGTH = 64K
+  FLASH1 (rx)    : ORIGIN = 0x08000000, LENGTH = 1024K
+  FLASH2 (rx)    : ORIGIN = 0x08100000, LENGTH = 1024K
+  DTCMRAM (xrw)  : ORIGIN = 0x20000000, LENGTH = 128K
+  AXISRAM (xrw)  : ORIGIN = 0x24000000, LENGTH = 512K
+  SRAM1 (xrw)    : ORIGIN = 0x30000000, LENGTH = 128K
+  SRAM2 (xrw)    : ORIGIN = 0x30020000, LENGTH = 128K
+  SRAM3 (xrw)    : ORIGIN = 0x30040000, LENGTH = 32K
+  SRAM4 (xrw)    : ORIGIN = 0x38000000, LENGTH = 64K
+}
+
+/* Define output sections */
+SECTIONS
+{
+  /* The startup code goes first into FLASH1 */
+  .isr_vector :
+  {
+    . = ALIGN(4);
+    KEEP(*(.isr_vector)) /* Startup code */
+    . = ALIGN(4);
+  } >FLASH1
+
+  /* STM32ZERO memory sections - start */
+
+  .dtcm_sec (NOLOAD) :
+  {
+    . = ALIGN(32);
+    *(.dtcmram)
+    *(.dtcm_ramfunc)
+    *(.dtcm_ramfunc*)
+  } >DTCMRAM
+
+  .dma_sec (NOLOAD) :
+  {
+    . = ALIGN(32);
+    *(.sram1)
+    *(.dma)
+    *(.dma_tx)
+    *(.dma_rx)
+  } >SRAM1
+
+  .lwip_heap_sec (NOLOAD) : /* LWIP_RAM_HEAP_POINTER 128 KiB */
+  {
+    . = ALIGN(4);
+    *(.sram2)
+    KEEP(*(.lwip_heap))
+  } >SRAM2
+
+  .lwip_sec (NOLOAD) :
+  {
+    . = ALIGN(4);
+
+    . = ABSOLUTE(0x30040000);
+    *(.RxDecripSection)
+
+    . = ABSOLUTE(0x30040100);
+    *(.TxDecripSection)
+
+    . = ABSOLUTE(0x30040200);
+    *(.Rx_PoolSection)
+  } >SRAM3
+
+  /* STM32ZERO memory sections - end */
+
+  /* The program code and other data goes into FLASH1 */
+  .text :
+  {
+    . = ALIGN(4);
+    *(.text)           /* .text sections (code) */
+    *(.text*)          /* .text* sections (code) */
+    *(.glue_7)         /* glue arm to thumb code */
+    *(.glue_7t)        /* glue thumb to arm code */
+    *(.eh_frame)
+
+    KEEP (*(.init))
+    KEEP (*(.fini))
+
+    . = ALIGN(4);
+    _etext = .;        /* define a global symbols at end of code */
+  } >FLASH1
+
+  /* Constant data goes into FLASH1 */
+  .rodata :
+  {
+    . = ALIGN(4);
+    *(.rodata)         /* .rodata sections (constants, strings, etc.) */
+    *(.rodata*)        /* .rodata* sections (constants, strings, etc.) */
+    . = ALIGN(4);
+  } >FLASH1
+
+  .ARM.extab (READONLY) :
+  {
+    *(.ARM.extab* .gnu.linkonce.armextab.*)
+  } >FLASH1
+
+  .ARM (READONLY) :
+  {
+    __exidx_start = .;
+    *(.ARM.exidx*)
+    __exidx_end = .;
+  } >FLASH1
+
+  .preinit_array (READONLY) :
+  {
+    PROVIDE_HIDDEN (__preinit_array_start = .);
+    KEEP (*(.preinit_array*))
+    PROVIDE_HIDDEN (__preinit_array_end = .);
+  } >FLASH1
+
+  .init_array (READONLY) :
+  {
+    PROVIDE_HIDDEN (__init_array_start = .);
+    KEEP (*(SORT(.init_array.*)))
+    KEEP (*(.init_array*))
+    PROVIDE_HIDDEN (__init_array_end = .);
+  } >FLASH1
+
+  .fini_array (READONLY) :
+  {
+    PROVIDE_HIDDEN (__fini_array_start = .);
+    KEEP (*(SORT(.fini_array.*)))
+    KEEP (*(.fini_array*))
+    PROVIDE_HIDDEN (__fini_array_end = .);
+  } >FLASH1
+
+  /* used by the startup to initialize data */
+  _sidata = LOADADDR(.data);
+
+  /* Initialized data sections goes into RAM, load LMA copy after code */
+  .data :
+  {
+    . = ALIGN(4);
+    _sdata = .;        /* create a global symbol at data start */
+    *(.data)           /* .data sections */
+    *(.data*)          /* .data* sections */
+    *(.RamFunc)        /* .RamFunc sections */
+    *(.RamFunc*)       /* .RamFunc* sections */
+
+    . = ALIGN(4);
+    _edata = .;        /* define a global symbol at data end */
+  } >AXISRAM AT> FLASH1
+
+  /* Uninitialized data section */
+  . = ALIGN(4);
+  .bss :
+  {
+    /* This is used by the startup in order to initialize the .bss section */
+    _sbss = .;         /* define a global symbol at bss start */
+    __bss_start__ = _sbss;
+    *(.bss)
+    *(.bss*)
+    *(COMMON)
+
+    . = ALIGN(4);
+    _ebss = .;         /* define a global symbol at bss end */
+    __bss_end__ = _ebss;
+  } >AXISRAM
+
+  /* User_heap_stack section, used to check that there is enough RAM left */
+  ._user_heap_stack :
+  {
+    . = ALIGN(8);
+    PROVIDE ( end = . );
+    PROVIDE ( _end = . );
+    . = . + _Min_Heap_Size;
+    . = . + _Min_Stack_Size;
+    . = ALIGN(8);
+  } >AXISRAM
+
+  /* Remove information from the standard libraries */
+  /DISCARD/ :
+  {
+    libc.a ( * )
+    libm.a ( * )
+    libgcc.a ( * )
+  }
+
+  .ARM.attributes 0 : { *(.ARM.attributes) }
+}
