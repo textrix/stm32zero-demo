@@ -14,7 +14,7 @@ using namespace stm32zero;
 using namespace stm32zero::freertos;
 
 // Static task in DTCM (zero heap allocation, fast access)
-STM32ZERO_DTCM static StaticTask<1024> system_task_;
+STM32ZERO_DTCM static StaticTask<256> system_task_;  // 256 words = 1024 bytes
 
 static __NO_RETURN void SYSTEM_task_func_(void* arg)
 {
