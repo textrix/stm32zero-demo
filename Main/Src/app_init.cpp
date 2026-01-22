@@ -10,6 +10,9 @@
 
 using namespace stm32zero::freertos;
 
+// Static task (zero heap allocation)
+static StaticTask<1024> system_task_;
+
 static __NO_RETURN void SYSTEM_task_func_(void* arg)
 {
 	uint32_t count = 0;
@@ -67,8 +70,13 @@ extern "C" __NO_RETURN void app_init(void)
 
 	// RTOS initialization and start (does not return)
 	osKernelInitialize();
+
+	// Dynamic task creation (uses heap)
 	xTaskCreate(INIT_task_func_, "INIT", 128, NULL, +Priority::NORMAL, NULL);
-	xTaskCreate(SYSTEM_task_func_, "SYSTEM", 256, NULL, +Priority::NORMAL, NULL);
+
+	// Static task creation (zero heap allocation)
+	system_task_.create(SYSTEM_task_func_, "SYSTEM", Priority::NORMAL);
+
 	osKernelStart();
 
 	// Should never reach here
