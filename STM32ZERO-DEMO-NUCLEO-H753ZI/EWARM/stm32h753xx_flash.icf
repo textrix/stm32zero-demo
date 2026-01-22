@@ -43,7 +43,8 @@ define region SRAM4_region    = mem:[from __ICFEDIT_region_SRAM4_start__ to __IC
 define block CSTACK    with alignment = 8, size = __ICFEDIT_size_cstack__   { };
 define block HEAP      with alignment = 8, size = __ICFEDIT_size_heap__     { };
 
-initialize by copy { readwrite };
+initialize by copy { readwrite, section .dtcmram_data };
+initialize by zeroing { section .dtcmram, section .dtcmram_bss };
 do not initialize  { section .noinit };
 
 place at address mem:__ICFEDIT_intvec_start__ { readonly section .intvec };
@@ -52,7 +53,8 @@ place in FLASH1_region   { readonly };
 place in AXISRAM_region  { readwrite, block CSTACK, block HEAP };
 
 /* STM32ZERO sections */
-place in DTCMRAM_region  { section .dtcmram };
+/* DTCMRAM: .dtcmram_data (initialized), .dtcmram/.dtcmram_bss (zero-init) */
+place in DTCMRAM_region  { section .dtcmram_data, section .dtcmram, section .dtcmram_bss };
 place in SRAM1_region    { section .dma, section .dma_tx, section .dma_rx };
 place in SRAM2_region    { section .lwip_heap };
 place in SRAM3_region    { section .RxDecripSection, section .TxDecripSection, section .Rx_PoolSection };
