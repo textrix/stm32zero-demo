@@ -55,6 +55,7 @@ void DebugMon_Handler(void);
 void FDCAN1_IT0_IRQHandler(void);
 void FDCAN1_IT1_IRQHandler(void);
 void EXTI15_10_IRQHandler(void);
+void DMA2_Stream7_IRQHandler(void);
 void TIM17_IRQHandler(void);
 /* USER CODE BEGIN EFP */
 

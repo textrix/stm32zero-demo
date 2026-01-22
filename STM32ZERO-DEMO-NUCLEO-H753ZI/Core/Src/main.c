@@ -19,6 +19,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "cmsis_os.h"
+#include "dma.h"
 #include "fdcan.h"
 #include "i2c.h"
 #include "lwip.h"
@@ -62,7 +63,7 @@ void PeriphCommonClock_Config(void);
 static void MPU_Config(void);
 void MX_FREERTOS_Init(void);
 /* USER CODE BEGIN PFP */
-
+extern __NO_RETURN void app_init(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -113,6 +114,7 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_TIM12_Init();
   MX_TIM4_Init();
   MX_TIM3_Init();
@@ -128,7 +130,8 @@ int main(void)
   MX_FDCAN1_Init();
   MX_USB_OTG_FS_USB_Init();
   /* USER CODE BEGIN 2 */
-
+  app_init();
+#if 0
   /* USER CODE END 2 */
 
   /* Init scheduler */
@@ -148,6 +151,7 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
   }
+#endif
   /* USER CODE END 3 */
 }
 
