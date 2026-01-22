@@ -2,9 +2,14 @@
  * STM32ZERO Library Test
  */
 
+#include "main.h"		// HAL headers
 #include "stm32zero.hpp"
+#include "stm32zero-debug.hpp"
 
 using namespace stm32zero;
+
+// Debug buffer instance (4KB dual buffer)
+STM32ZERO_DEBUG_DEFINE(4096);
 
 // DMA buffer test
 STM32ZERO_DMA_TX DmaBuffer<64> tx_buf;
@@ -33,6 +38,31 @@ static_assert(DmaBuffer<50>::aligned_size() == 64, "DmaBuffer 50 aligned to 64")
 // dimof test
 static int test_array[10];
 static_assert(dimof(test_array) == 10, "dimof test");
+
+/**
+ * Initialize debug output
+ *
+ * Call after MX_USARTx_UART_Init() in main.c
+ *
+ * @param huart Pointer to UART handle (e.g., &huart3)
+ */
+extern "C" void debug_init(UART_HandleTypeDef* huart)
+{
+	debug::buffer.set_uart(huart);
+}
+
+/**
+ * DMA TX complete callback
+ *
+ * Call from HAL_UART_TxCpltCallback() in main.c or stm32h7xx_it.c
+ *
+ * @param huart Pointer to UART handle
+ */
+extern "C" void debug_tx_complete(UART_HandleTypeDef* huart)
+{
+	(void)huart;
+	debug::buffer.tx_complete_isr();
+}
 
 extern "C" void test_stm32zero(void)
 {
