@@ -59,7 +59,6 @@ static __NO_RETURN void SYSTEM_task_func_(void* arg)
 static __NO_RETURN void INIT_task_func_(void* arg)
 {
 	// Debug output initialization (after MX_USART3_UART_Init)
-	stm32zero::debug::init();
 
 #if 0
 	LED_init();
@@ -99,11 +98,12 @@ static __NO_RETURN void INIT_task_func_(void* arg)
 
 extern "C" __NO_RETURN void app_init(void)
 {
+	stm32zero::debug::init();
 
 	// RTOS initialization and start (does not return)
 	osKernelInitialize();
 	xTaskCreate(INIT_task_func_, "INIT", 128, NULL, TASK_NORMAL_PRIORITY, NULL);
-	xTaskCreate(SYSTEM_task_func_, "SYSTEM", 128, NULL, TASK_NORMAL_PRIORITY, NULL);
+	xTaskCreate(SYSTEM_task_func_, "SYSTEM", 256, NULL, TASK_NORMAL_PRIORITY, NULL);
 	osKernelStart();
 
 	// Should never reach here

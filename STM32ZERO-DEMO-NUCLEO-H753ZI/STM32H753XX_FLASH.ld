@@ -49,12 +49,28 @@ SECTIONS
 
   /* STM32ZERO memory sections - start */
 
-  .dtcm_sec (NOLOAD) :
+  /* DTCMRAM initialized data (copied from Flash) */
+  _sidtcmram = LOADADDR(.dtcmram_data);
+  .dtcmram_data :
   {
-    . = ALIGN(32);
+    . = ALIGN(4);
+    _sdtcmram = .;
+    *(.dtcmram_data)
+    *(.dtcmram_data*)
+    . = ALIGN(4);
+    _edtcmram = .;
+  } >DTCMRAM AT> FLASH1
+
+  /* DTCMRAM uninitialized data (zero filled) */
+  .dtcmram_bss (NOLOAD) :
+  {
+    . = ALIGN(4);
+    _sdtcmram_bss = .;
     *(.dtcmram)
-    *(.dtcm_ramfunc)
-    *(.dtcm_ramfunc*)
+    *(.dtcmram_bss)
+    *(.dtcmram_bss*)
+    . = ALIGN(4);
+    _edtcmram_bss = .;
   } >DTCMRAM
 
   .dma_sec (NOLOAD) :

@@ -32,7 +32,7 @@ void MX_SDMMC1_MMC_Init(void)
 {
 
   /* USER CODE BEGIN SDMMC1_Init 0 */
-
+  return; //@@@ temp
   /* USER CODE END SDMMC1_Init 0 */
 
   /* USER CODE BEGIN SDMMC1_Init 1 */

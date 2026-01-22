@@ -35,7 +35,7 @@
 ENTRY(Reset_Handler)
 
 /* Highest address of the user mode stack */
-_estack = ORIGIN(AXISRAM) + LENGTH(AXISRAM);    /* end of RAM */
+_estack = ORIGIN(RAM_D1) + LENGTH(RAM_D1);    /* end of RAM */
 /* Generate a link error if heap and stack don't fit into RAM */
 _Min_Heap_Size = 0x200;      /* required amount of heap  */
 _Min_Stack_Size = 0x400; /* required amount of stack */
@@ -43,87 +43,26 @@ _Min_Stack_Size = 0x400; /* required amount of stack */
 /* Specify the memory areas */
 MEMORY
 {
-  ITCMRAM (xrw)  : ORIGIN = 0x00000000, LENGTH = 64K
-  FLASH1 (rx)    : ORIGIN = 0x08000000, LENGTH = 1024K
-  FLASH2 (rx)    : ORIGIN = 0x08100000, LENGTH = 1024K
+  FLASH (rx)     : ORIGIN = 0x08000000, LENGTH = 2048K
   DTCMRAM (xrw)  : ORIGIN = 0x20000000, LENGTH = 128K
-  AXISRAM (xrw)  : ORIGIN = 0x24000000, LENGTH = 512K
-  SRAM1 (xrw)    : ORIGIN = 0x30000000, LENGTH = 128K
-  SRAM2 (xrw)    : ORIGIN = 0x30020000, LENGTH = 128K
-  SRAM3 (xrw)    : ORIGIN = 0x30040000, LENGTH = 32K
-  SRAM4 (xrw)    : ORIGIN = 0x38000000, LENGTH = 64K
+  RAM_D1 (xrw)   : ORIGIN = 0x24000000, LENGTH = 512K
+  RAM_D2 (xrw)   : ORIGIN = 0x30000000, LENGTH = 288K
+  RAM_D3 (xrw)   : ORIGIN = 0x38000000, LENGTH = 64K
+  ITCMRAM (xrw)  : ORIGIN = 0x00000000, LENGTH = 64K
 }
 
 /* Define output sections */
 SECTIONS
 {
-  /* The startup code goes first into FLASH1 */
+  /* The startup code goes first into FLASH */
   .isr_vector :
   {
     . = ALIGN(4);
     KEEP(*(.isr_vector)) /* Startup code */
     . = ALIGN(4);
-  } >FLASH1
+  } >FLASH
 
-  /* STM32ZERO memory sections - start */
-
-  /* DTCMRAM initialized data (copied from Flash) */
-  _sidtcmram = LOADADDR(.dtcmram_data);
-  .dtcmram_data :
-  {
-    . = ALIGN(4);
-    _sdtcmram = .;
-    *(.dtcmram_data)
-    *(.dtcmram_data*)
-    . = ALIGN(4);
-    _edtcmram = .;
-  } >DTCMRAM AT> FLASH1
-
-  /* DTCMRAM uninitialized data (zero filled) */
-  .dtcmram_bss (NOLOAD) :
-  {
-    . = ALIGN(4);
-    _sdtcmram_bss = .;
-    *(.dtcmram)
-    *(.dtcmram_bss)
-    *(.dtcmram_bss*)
-    . = ALIGN(4);
-    _edtcmram_bss = .;
-  } >DTCMRAM
-
-  .dma_sec (NOLOAD) :
-  {
-    . = ALIGN(32);
-    *(.sram1)
-    *(.dma)
-    *(.dma_tx)
-    *(.dma_rx)
-  } >SRAM1
-
-  .lwip_heap_sec (NOLOAD) : /* LWIP_RAM_HEAP_POINTER 128 KiB */
-  {
-    . = ALIGN(4);
-    *(.sram2)
-    KEEP(*(.lwip_heap))
-  } >SRAM2
-
-  .lwip_sec (NOLOAD) :
-  {
-    . = ALIGN(4);
-
-    . = ABSOLUTE(0x30040000);
-    *(.RxDecripSection)
-
-    . = ABSOLUTE(0x30040100);
-    *(.TxDecripSection)
-
-    . = ABSOLUTE(0x30040200);
-    *(.Rx_PoolSection)
-  } >SRAM3
-
-  /* STM32ZERO memory sections - end */
-
-  /* The program code and other data goes into FLASH1 */
+  /* The program code and other data goes into FLASH */
   .text :
   {
     . = ALIGN(4);
@@ -138,34 +77,34 @@ SECTIONS
 
     . = ALIGN(4);
     _etext = .;        /* define a global symbols at end of code */
-  } >FLASH1
+  } >FLASH
 
-  /* Constant data goes into FLASH1 */
+  /* Constant data goes into FLASH */
   .rodata :
   {
     . = ALIGN(4);
     *(.rodata)         /* .rodata sections (constants, strings, etc.) */
     *(.rodata*)        /* .rodata* sections (constants, strings, etc.) */
     . = ALIGN(4);
-  } >FLASH1
+  } >FLASH
 
   .ARM.extab (READONLY) : /* The READONLY keyword is only supported in GCC11 and later, remove it if using GCC10 or earlier. */
   {
     *(.ARM.extab* .gnu.linkonce.armextab.*)
-  } >FLASH1
+  } >FLASH
   .ARM (READONLY) : /* The READONLY keyword is only supported in GCC11 and later, remove it if using GCC10 or earlier. */
   {
     __exidx_start = .;
     *(.ARM.exidx*)
     __exidx_end = .;
-  } >FLASH1
+  } >FLASH
 
   .preinit_array (READONLY) : /* The READONLY keyword is only supported in GCC11 and later, remove it if using GCC10 or earlier. */
   {
     PROVIDE_HIDDEN (__preinit_array_start = .);
     KEEP (*(.preinit_array*))
     PROVIDE_HIDDEN (__preinit_array_end = .);
-  } >FLASH1
+  } >FLASH
 
   .init_array (READONLY) : /* The READONLY keyword is only supported in GCC11 and later, remove it if using GCC10 or earlier. */
   {
@@ -173,7 +112,7 @@ SECTIONS
     KEEP (*(SORT(.init_array.*)))
     KEEP (*(.init_array*))
     PROVIDE_HIDDEN (__init_array_end = .);
-  } >FLASH1
+  } >FLASH
 
   .fini_array (READONLY) : /* The READONLY keyword is only supported in GCC11 and later, remove it if using GCC10 or earlier. */
   {
@@ -181,7 +120,7 @@ SECTIONS
     KEEP (*(SORT(.fini_array.*)))
     KEEP (*(.fini_array*))
     PROVIDE_HIDDEN (__fini_array_end = .);
-  } >FLASH1
+  } >FLASH
 
   /* used by the startup to initialize data */
   _sidata = LOADADDR(.data);
@@ -198,7 +137,7 @@ SECTIONS
 
     . = ALIGN(4);
     _edata = .;        /* define a global symbol at data end */
-  } >AXISRAM AT> FLASH1
+  } >RAM_D1 AT> FLASH
 
   /* Uninitialized data section */
   . = ALIGN(4);
@@ -214,7 +153,7 @@ SECTIONS
     . = ALIGN(4);
     _ebss = .;         /* define a global symbol at bss end */
     __bss_end__ = _ebss;
-  } >AXISRAM
+  } >RAM_D1
 
   /* User_heap_stack section, used to check that there is enough RAM left */
   ._user_heap_stack :
@@ -225,7 +164,7 @@ SECTIONS
     . = . + _Min_Heap_Size;
     . = . + _Min_Stack_Size;
     . = ALIGN(8);
-  } >AXISRAM
+  } >RAM_D1
 
   /* Remove information from the standard libraries */
   /DISCARD/ :
