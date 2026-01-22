@@ -4,14 +4,17 @@
 
 #include "main.h"
 #include "cmsis_os.h"
+#include "stm32zero.hpp"
+#include "stm32zero-ustim.hpp"
 #include "stm32zero-debug.hpp"
 #include "stm32zero-freertos.hpp"
 #include <cstdio>
 
+using namespace stm32zero;
 using namespace stm32zero::freertos;
 
-// Static task (zero heap allocation)
-static StaticTask<1024> system_task_;
+// Static task in DTCM (zero heap allocation, fast access)
+STM32ZERO_DTCM static StaticTask<1024> system_task_;
 
 static __NO_RETURN void SYSTEM_task_func_(void* arg)
 {
@@ -19,8 +22,9 @@ static __NO_RETURN void SYSTEM_task_func_(void* arg)
 	(void)arg;
 
 	while (true) {
-		printf("%lu SYSTEM task running...\r\n", count++);
-		vTaskDelay(1000); // Delay for 1 second
+		uint64_t t = ustim::get();
+		printf("%lu.%06lu %lu SYSTEM task running...\r\n", (uint32_t)(t / 1000000), (uint32_t)(t % 1000000), count++);
+		vTaskDelay(10); // Delay for 1 second
 	}
 }
 
@@ -66,6 +70,7 @@ static __NO_RETURN void INIT_task_func_(void* arg)
 
 extern "C" __NO_RETURN void app_init(void)
 {
+	stm32zero::ustim::init();
 	stm32zero::debug::init();
 
 	// RTOS initialization and start (does not return)
