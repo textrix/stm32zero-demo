@@ -28,7 +28,7 @@ static __NO_RETURN void SYSTEM_task_func_(void* arg)
 		//printf("%lu.%06lu %lu SYSTEM task running...\r\n", (uint32_t)(t / 1000000), (uint32_t)(t % 1000000), count++);
 
 		char buffer[128];
-		int r = sin::readline(buffer, sizeof buffer, 100);
+		int r = sin::readln(buffer, sizeof buffer, 100);
 
 		if (0 <= r) {
 			printf("%s\r\n", buffer);

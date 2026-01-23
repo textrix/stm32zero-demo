@@ -49,6 +49,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     # STM32ZERO library sources
     ${CMAKE_CURRENT_SOURCE_DIR}/../STM32ZERO/src/stm32zero-sout.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../STM32ZERO/src/stm32zero-sin.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/../STM32ZERO/src/stm32zero-serial.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../STM32ZERO/src/stm32zero-ustim.cpp
     # Shared Main sources
     ${CMAKE_CURRENT_SOURCE_DIR}/../Main/Src/app_init.cpp
