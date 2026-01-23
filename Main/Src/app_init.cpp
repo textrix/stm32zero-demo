@@ -6,8 +6,7 @@
 #include "cmsis_os.h"
 #include "stm32zero.hpp"
 #include "stm32zero-ustim.hpp"
-#include "stm32zero-sout.hpp"
-#include "stm32zero-sin.hpp"
+#include "stm32zero-sio.hpp"
 #include "stm32zero-freertos.hpp"
 #include <cstdio>
 
@@ -28,7 +27,7 @@ static __NO_RETURN void SYSTEM_task_func_(void* arg)
 		//printf("%lu.%06lu %lu SYSTEM task running...\r\n", (uint32_t)(t / 1000000), (uint32_t)(t % 1000000), count++);
 
 		char buffer[128];
-		int r = sin::readln(buffer, sizeof buffer, 100);
+		int r = sio::readln(buffer, sizeof buffer, 100);
 
 		if (0 <= r) {
 			printf("%s\r\n", buffer);
@@ -83,8 +82,7 @@ static __NO_RETURN void INIT_task_func_(void* arg)
 extern "C" __NO_RETURN void app_init(void)
 {
 	stm32zero::ustim::init();
-	stm32zero::sout::init();
-	stm32zero::sin::init();
+	stm32zero::sio::init();
 
 	// RTOS initialization and start (does not return)
 	osKernelInitialize();
