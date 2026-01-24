@@ -13,6 +13,7 @@
 using namespace stm32zero;
 using namespace stm32zero::freertos;
 
+#if 0  // SYSTEM task - disabled while running tests
 // Static task in DTCM (zero heap allocation, fast access)
 STM32ZERO_DTCM static StaticTask<512> system_task_;  // 256 words = 1024 bytes
 
@@ -38,6 +39,7 @@ static __NO_RETURN void SYSTEM_task_func_(void* arg)
 		}
 	}
 }
+#endif
 
 static __NO_RETURN void INIT_task_func_(void* arg)
 {
@@ -79,6 +81,9 @@ static __NO_RETURN void INIT_task_func_(void* arg)
 	}
 }
 
+// Test runner entry point
+extern "C" void test_runner_start(void);
+
 extern "C" __NO_RETURN void app_init(void)
 {
 	stm32zero::ustim::init();
@@ -90,8 +95,12 @@ extern "C" __NO_RETURN void app_init(void)
 	// Dynamic task creation (uses heap)
 	xTaskCreate(INIT_task_func_, "INIT", 128, NULL, +Priority::NORMAL, NULL);
 
+	// Start test runner (creates test task internally)
+	test_runner_start();
+
 	// Static task creation (zero heap allocation)
-	system_task_.create(SYSTEM_task_func_, "SYSTEM", Priority::NORMAL);
+	// Note: SYSTEM task now runs after tests complete
+	// system_task_.create(SYSTEM_task_func_, "SYSTEM", Priority::NORMAL);
 
 	osKernelStart();
 

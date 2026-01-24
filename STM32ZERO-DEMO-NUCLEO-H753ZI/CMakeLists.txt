@@ -53,6 +53,12 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     # Shared Main sources
     ${CMAKE_CURRENT_SOURCE_DIR}/../Main/Src/app_init.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../Main/Src/test_stm32zero.cpp
+    # Test suite
+    ${CMAKE_CURRENT_SOURCE_DIR}/../Main/Src/test_runner.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/../Main/Src/test_core.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/../Main/Src/test_sio.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/../Main/Src/test_freertos.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/../Main/Src/test_ustim.cpp
 )
 
 # Add include paths
