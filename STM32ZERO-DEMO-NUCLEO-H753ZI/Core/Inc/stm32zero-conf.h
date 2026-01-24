@@ -23,4 +23,9 @@
 // FreeRTOS enabled
 #define STM32ZERO_RTOS_FREERTOS    1
 
+// Microsecond timer (48-bit, 16+16+16 cascaded timers)
+#define STM32ZERO_USTIM_LOW   3
+#define STM32ZERO_USTIM_MID   4
+#define STM32ZERO_USTIM_HIGH  12
+
 #endif // STM32ZERO_CONF_H

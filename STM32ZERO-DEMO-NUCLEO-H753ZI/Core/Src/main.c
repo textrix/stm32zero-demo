@@ -129,6 +129,7 @@ int main(void)
   MX_SPI4_Init();
   MX_FDCAN1_Init();
   MX_USB_OTG_FS_USB_Init();
+  MX_TIM8_Init();
   /* USER CODE BEGIN 2 */
   app_init();
 #if 0
