@@ -16,13 +16,37 @@ Demo project for NUCLEO-H753ZI development board (STM32H753ZIT6, Cortex-M7).
 - FreeRTOS static task creation in DTCM RAM
 - Section placement macros (`STM32ZERO_DTCM`)
 
+## Runtime Tests
+
+The demo includes a comprehensive runtime test suite that validates library functionality on actual hardware.
+
+**Test output via UART (115200 baud):**
+
+```
+--- USTIM Tests ---
+[PASS] ustim::get() monotonic (t2 >= t1)
+[PASS] vTaskDelay(10ms) x10 (min 9679, max 9999, avg 9967)
+[PASS] ustim::spin(100) (expected 100~200, actual 101)
+```
+
+**Test macros:**
+- `TEST_ASSERT(cond, desc)` - Simple pass/fail
+- `TEST_ASSERT_EQ(actual, expected, desc)` - Exact value match
+- `TEST_ASSERT_RANGE(actual, min, max, desc)` - Range check with actual value display
+- `TEST_ASSERT_STATS(stats, min, max, desc)` - Statistical test (min/max/avg over iterations)
+
 ## Project Structure
 
 ```
 STM32ZERO-DEMO/
 ├── Main/
 │   └── Src/
-│       └── app_init.cpp        # Application entry point
+│       ├── app_init.cpp        # Application entry point
+│       ├── test_runner.cpp     # Test framework and runner
+│       ├── test_core.cpp       # Core module tests
+│       ├── test_sio.cpp        # Serial I/O tests
+│       ├── test_freertos.cpp   # FreeRTOS wrapper tests
+│       └── test_ustim.cpp      # Microsecond timer tests
 ├── STM32ZERO/                   # Library submodule
 └── STM32ZERO-DEMO-NUCLEO-H753ZI/
     ├── Core/                    # STM32CubeMX generated code

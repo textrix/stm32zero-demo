@@ -12,6 +12,7 @@
 #include "stm32zero.hpp"
 #include "stm32zero-ustim.hpp"
 #include <cstdio>
+#include <climits>
 
 using namespace stm32zero;
 
@@ -23,6 +24,11 @@ extern void test_report_pass(const char* desc);
 extern void test_report_fail(const char* desc);
 extern void test_report_pass_eq(const char* desc, long expected, long actual);
 extern void test_report_fail_eq(const char* desc, long expected, long actual);
+extern void test_report_pass_range(const char* desc, long min, long max, long actual);
+extern void test_report_fail_range(const char* desc, long min, long max, long actual);
+extern void test_report_pass_stats(const char* desc, int count, long min, long max, long avg);
+extern void test_report_fail_stats(const char* desc, int count, long min, long max, long avg,
+				   long expected_min, long expected_max);
 
 #define TEST_ASSERT(cond, desc) \
 	do { \
@@ -41,6 +47,50 @@ extern void test_report_fail_eq(const char* desc, long expected, long actual);
 			test_report_pass_eq(desc, e_, a_); \
 		} else { \
 			test_report_fail_eq(desc, e_, a_); \
+		} \
+	} while (0)
+
+#define TEST_ASSERT_RANGE(actual, min, max, desc) \
+	do { \
+		long a_ = (long)(actual); \
+		long min_ = (long)(min); \
+		long max_ = (long)(max); \
+		if (a_ >= min_ && a_ <= max_) { \
+			test_report_pass_range(desc, min_, max_, a_); \
+		} else { \
+			test_report_fail_range(desc, min_, max_, a_); \
+		} \
+	} while (0)
+
+//=============================================================================
+// Statistics Helper
+//=============================================================================
+
+struct TestStats {
+	long min;
+	long max;
+	long sum;
+	int count;
+
+	void reset() { min = LONG_MAX; max = 0; sum = 0; count = 0; }
+	void add(long val) {
+		if (val < min) min = val;
+		if (val > max) max = val;
+		sum += val;
+		count++;
+	}
+	long avg() const { return count > 0 ? sum / count : 0; }
+};
+
+#define TEST_ASSERT_STATS(stats, expected_min, expected_max, desc) \
+	do { \
+		if ((stats).min >= (expected_min) && (stats).max <= (expected_max)) { \
+			test_report_pass_stats(desc, (stats).count, \
+				(stats).min, (stats).max, (stats).avg()); \
+		} else { \
+			test_report_fail_stats(desc, (stats).count, \
+				(stats).min, (stats).max, (stats).avg(), \
+				(expected_min), (expected_max)); \
 		} \
 	} while (0)
 
@@ -86,48 +136,54 @@ static void test_ustim_get_increases(void)
 
 static void test_ustim_elapsed_basic(void)
 {
-	uint64_t start = ustim::get();
+	constexpr int ITERATIONS = 10;
+	TestStats stats;
+	stats.reset();
 
-	// Wait using FreeRTOS delay (~10ms)
-	vTaskDelay(pdMS_TO_TICKS(10));
-
-	uint64_t elapsed = ustim::elapsed(start);
+	for (int i = 0; i < ITERATIONS; i++) {
+		uint64_t start = ustim::get();
+		vTaskDelay(pdMS_TO_TICKS(10));
+		stats.add(static_cast<long>(ustim::elapsed(start)));
+	}
 
 	// Should be roughly 10000us (10ms) with some tolerance
-	// Allow 8000 - 15000 us (timing not precise due to RTOS overhead)
-	TEST_ASSERT(elapsed >= 8000 && elapsed <= 15000,
-		"ustim::elapsed() ~10ms (8000-15000 us)");
+	// Allow 8000 - 12000 us (timing not precise due to RTOS overhead)
+	TEST_ASSERT_STATS(stats, 8000, 12000, "vTaskDelay(10ms)");
 }
 
 static void test_ustim_elapsed_1ms(void)
 {
-	uint64_t start = ustim::get();
+	constexpr int ITERATIONS = 10;
+	TestStats stats;
+	stats.reset();
 
-	// Wait ~1ms using FreeRTOS delay
-	vTaskDelay(pdMS_TO_TICKS(1));
-
-	uint64_t elapsed = ustim::elapsed(start);
+	for (int i = 0; i < ITERATIONS; i++) {
+		uint64_t start = ustim::get();
+		vTaskDelay(pdMS_TO_TICKS(1));
+		stats.add(static_cast<long>(ustim::elapsed(start)));
+	}
 
 	// Should be roughly 1000us (1ms) with tolerance
-	// FreeRTOS tick is typically 1ms, so actual delay is at least 1 tick
-	// Allow 500 - 3000 us due to tick resolution
-	TEST_ASSERT(elapsed >= 500 && elapsed <= 3000,
-		"ustim::elapsed() ~1ms (500-3000 us)");
+	// FreeRTOS tick is typically 1ms, so actual delay is 0~2 ticks
+	// Allow 0 - 2000 us due to tick resolution
+	TEST_ASSERT_STATS(stats, 0, 2000, "vTaskDelay(1ms)");
 }
 
 static void test_ustim_elapsed_100ms(void)
 {
-	uint64_t start = ustim::get();
+	constexpr int ITERATIONS = 5;
+	TestStats stats;
+	stats.reset();
 
-	// Wait ~100ms
-	vTaskDelay(pdMS_TO_TICKS(100));
-
-	uint64_t elapsed = ustim::elapsed(start);
+	for (int i = 0; i < ITERATIONS; i++) {
+		uint64_t start = ustim::get();
+		vTaskDelay(pdMS_TO_TICKS(100));
+		stats.add(static_cast<long>(ustim::elapsed(start)));
+	}
 
 	// Should be roughly 100000us (100ms)
-	// Allow 90000 - 120000 us
-	TEST_ASSERT(elapsed >= 90000 && elapsed <= 120000,
-		"ustim::elapsed() ~100ms (90000-120000 us)");
+	// Allow 99000 - 101000 us (tighter tolerance for longer delays)
+	TEST_ASSERT_STATS(stats, 99000, 101000, "vTaskDelay(100ms)");
 }
 
 //=============================================================================
@@ -208,8 +264,8 @@ static void test_ustim_spin_100us(void)
 	uint64_t elapsed = ustim::elapsed(start);
 
 	// Should be at least 100us, allow up to 200us (overhead)
-	TEST_ASSERT(elapsed >= 100 && elapsed <= 200,
-		"ustim::spin(100) takes 100-200 us");
+	TEST_ASSERT_RANGE(elapsed, 100, 200,
+		"ustim::spin(100)");
 }
 
 static void test_ustim_spin_1000us(void)
@@ -219,8 +275,8 @@ static void test_ustim_spin_1000us(void)
 	uint64_t elapsed = ustim::elapsed(start);
 
 	// Should be at least 1000us, allow up to 1200us
-	TEST_ASSERT(elapsed >= 1000 && elapsed <= 1200,
-		"ustim::spin(1000) takes 1000-1200 us");
+	TEST_ASSERT_RANGE(elapsed, 1000, 1200,
+		"ustim::spin(1000)");
 }
 
 static void test_ustim_spin_10us(void)
@@ -230,8 +286,8 @@ static void test_ustim_spin_10us(void)
 	uint64_t elapsed = ustim::elapsed(start);
 
 	// Should be at least 10us, allow up to 50us (small delay overhead)
-	TEST_ASSERT(elapsed >= 10 && elapsed <= 50,
-		"ustim::spin(10) takes 10-50 us");
+	TEST_ASSERT_RANGE(elapsed, 10, 50,
+		"ustim::spin(10)");
 }
 
 //=============================================================================
@@ -245,8 +301,8 @@ static void test_ustim_delay_us_100(void)
 	uint64_t elapsed = ustim::elapsed(start);
 
 	// Should be at least 100us, allow up to 200us
-	TEST_ASSERT(elapsed >= 100 && elapsed <= 200,
-		"ustim::delay_us(100) takes 100-200 us");
+	TEST_ASSERT_RANGE(elapsed, 100, 200,
+		"ustim::delay_us(100)");
 }
 
 static void test_ustim_delay_us_1000(void)
@@ -256,8 +312,8 @@ static void test_ustim_delay_us_1000(void)
 	uint64_t elapsed = ustim::elapsed(start);
 
 	// Should be at least 1000us, allow up to 1200us
-	TEST_ASSERT(elapsed >= 1000 && elapsed <= 1200,
-		"ustim::delay_us(1000) takes 1000-1200 us");
+	TEST_ASSERT_RANGE(elapsed, 1000, 1200,
+		"ustim::delay_us(1000)");
 }
 
 static void test_ustim_spin_in_critical_section(void)
@@ -272,8 +328,8 @@ static void test_ustim_spin_in_critical_section(void)
 	uint64_t elapsed = ustim::elapsed(start);
 
 	// Should be at least 100us total, allow up to 200us
-	TEST_ASSERT(elapsed >= 100 && elapsed <= 200,
-		"ustim::spin() x2 in CriticalSection takes 100-200 us");
+	TEST_ASSERT_RANGE(elapsed, 100, 200,
+		"ustim::spin() x2 in CriticalSection");
 }
 
 //=============================================================================

@@ -171,3 +171,29 @@ void test_report_fail_eq(const char* desc, long expected, long actual)
 	printf("[FAIL] %s (expected %ld, got %ld)\r\n", desc, expected, actual);
 	test_fail_count++;
 }
+
+void test_report_pass_range(const char* desc, long min, long max, long actual)
+{
+	printf("[PASS] %s (expected %ld~%ld, actual %ld)\r\n", desc, min, max, actual);
+	test_pass_count++;
+}
+
+void test_report_fail_range(const char* desc, long min, long max, long actual)
+{
+	printf("[FAIL] %s (expected %ld~%ld, actual %ld)\r\n", desc, min, max, actual);
+	test_fail_count++;
+}
+
+void test_report_pass_stats(const char* desc, int count, long min, long max, long avg)
+{
+	printf("[PASS] %s x%d (min %ld, max %ld, avg %ld)\r\n", desc, count, min, max, avg);
+	test_pass_count++;
+}
+
+void test_report_fail_stats(const char* desc, int count, long min, long max, long avg,
+			    long expected_min, long expected_max)
+{
+	printf("[FAIL] %s x%d (min %ld, max %ld, avg %ld) expected %ld~%ld\r\n",
+	       desc, count, min, max, avg, expected_min, expected_max);
+	test_fail_count++;
+}

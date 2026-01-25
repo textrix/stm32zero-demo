@@ -16,13 +16,37 @@ NUCLEO-H753ZI 개발 보드 (STM32H753ZIT6, Cortex-M7) 데모 프로젝트.
 - DTCM RAM에 FreeRTOS 정적 태스크 생성
 - 섹션 배치 매크로 (`STM32ZERO_DTCM`)
 
+## 런타임 테스트
+
+실제 하드웨어에서 라이브러리 기능을 검증하는 런타임 테스트 스위트 포함.
+
+**UART 테스트 출력 (115200 baud):**
+
+```
+--- USTIM Tests ---
+[PASS] ustim::get() monotonic (t2 >= t1)
+[PASS] vTaskDelay(10ms) x10 (min 9679, max 9999, avg 9967)
+[PASS] ustim::spin(100) (expected 100~200, actual 101)
+```
+
+**테스트 매크로:**
+- `TEST_ASSERT(cond, desc)` - 단순 pass/fail
+- `TEST_ASSERT_EQ(actual, expected, desc)` - 정확한 값 일치
+- `TEST_ASSERT_RANGE(actual, min, max, desc)` - 범위 검사 + 실제값 표시
+- `TEST_ASSERT_STATS(stats, min, max, desc)` - 통계 테스트 (반복 측정 min/max/avg)
+
 ## 프로젝트 구조
 
 ```
 STM32ZERO-DEMO/
 ├── Main/
 │   └── Src/
-│       └── app_init.cpp        # 애플리케이션 진입점
+│       ├── app_init.cpp        # 애플리케이션 진입점
+│       ├── test_runner.cpp     # 테스트 프레임워크 및 러너
+│       ├── test_core.cpp       # Core 모듈 테스트
+│       ├── test_sio.cpp        # 시리얼 I/O 테스트
+│       ├── test_freertos.cpp   # FreeRTOS 래퍼 테스트
+│       └── test_ustim.cpp      # 마이크로초 타이머 테스트
 ├── STM32ZERO/                   # 라이브러리 서브모듈
 └── STM32ZERO-DEMO-NUCLEO-H753ZI/
     ├── Core/                    # STM32CubeMX 생성 코드
