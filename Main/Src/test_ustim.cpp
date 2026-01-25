@@ -198,6 +198,85 @@ static void test_ustim_elapsed_mask(void)
 }
 
 //=============================================================================
+// spin() Tests
+//=============================================================================
+
+static void test_ustim_spin_100us(void)
+{
+	uint64_t start = ustim::get();
+	ustim::spin(100);
+	uint64_t elapsed = ustim::elapsed(start);
+
+	// Should be at least 100us, allow up to 200us (overhead)
+	TEST_ASSERT(elapsed >= 100 && elapsed <= 200,
+		"ustim::spin(100) takes 100-200 us");
+}
+
+static void test_ustim_spin_1000us(void)
+{
+	uint64_t start = ustim::get();
+	ustim::spin(1000);
+	uint64_t elapsed = ustim::elapsed(start);
+
+	// Should be at least 1000us, allow up to 1200us
+	TEST_ASSERT(elapsed >= 1000 && elapsed <= 1200,
+		"ustim::spin(1000) takes 1000-1200 us");
+}
+
+static void test_ustim_spin_10us(void)
+{
+	uint64_t start = ustim::get();
+	ustim::spin(10);
+	uint64_t elapsed = ustim::elapsed(start);
+
+	// Should be at least 10us, allow up to 50us (small delay overhead)
+	TEST_ASSERT(elapsed >= 10 && elapsed <= 50,
+		"ustim::spin(10) takes 10-50 us");
+}
+
+//=============================================================================
+// delay_us() Tests
+//=============================================================================
+
+static void test_ustim_delay_us_100(void)
+{
+	uint64_t start = ustim::get();
+	ustim::delay_us(100);
+	uint64_t elapsed = ustim::elapsed(start);
+
+	// Should be at least 100us, allow up to 200us
+	TEST_ASSERT(elapsed >= 100 && elapsed <= 200,
+		"ustim::delay_us(100) takes 100-200 us");
+}
+
+static void test_ustim_delay_us_1000(void)
+{
+	uint64_t start = ustim::get();
+	ustim::delay_us(1000);
+	uint64_t elapsed = ustim::elapsed(start);
+
+	// Should be at least 1000us, allow up to 1200us
+	TEST_ASSERT(elapsed >= 1000 && elapsed <= 1200,
+		"ustim::delay_us(1000) takes 1000-1200 us");
+}
+
+static void test_ustim_spin_in_critical_section(void)
+{
+	// Test that spin works inside a user-managed critical section
+	uint64_t start = ustim::get();
+	{
+		CriticalSection cs;
+		ustim::spin(50);
+		ustim::spin(50);  // Two consecutive spins
+	}
+	uint64_t elapsed = ustim::elapsed(start);
+
+	// Should be at least 100us total, allow up to 200us
+	TEST_ASSERT(elapsed >= 100 && elapsed <= 200,
+		"ustim::spin() x2 in CriticalSection takes 100-200 us");
+}
+
+//=============================================================================
 // Consistency Test
 //=============================================================================
 
@@ -249,6 +328,16 @@ extern "C" void test_ustim_runtime(void)
 
 	// Consistency test
 	test_ustim_consistency();
+
+	// spin() tests
+	test_ustim_spin_10us();
+	test_ustim_spin_100us();
+	test_ustim_spin_1000us();
+
+	// delay_us() tests
+	test_ustim_delay_us_100();
+	test_ustim_delay_us_1000();
+	test_ustim_spin_in_critical_section();
 
 	printf("\r\n");
 	printf("Note: ustim ISR safety verified by design (lock-free read).\r\n");
