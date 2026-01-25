@@ -10,7 +10,6 @@
 #include "stm32zero.hpp"
 #include "stm32zero-sio.hpp"
 #include "stm32zero-freertos.hpp"
-#include <cstdio>
 #include <cstring>
 
 using namespace stm32zero;
@@ -22,14 +21,15 @@ using namespace stm32zero::freertos;
 
 static uint32_t test_pass_count = 0;
 static uint32_t test_fail_count = 0;
+static char fmt_buf_[256];
 
 #define TEST_ASSERT(cond, desc) \
 	do { \
 		if (cond) { \
-			printf("[PASS] %s\r\n", desc); \
+			sio::writef(fmt_buf_, "[PASS] %s\r\n", desc); \
 			test_pass_count++; \
 		} else { \
-			printf("[FAIL] %s\r\n", desc); \
+			sio::writef(fmt_buf_, "[FAIL] %s\r\n", desc); \
 			test_fail_count++; \
 		} \
 	} while (0)
@@ -37,10 +37,11 @@ static uint32_t test_fail_count = 0;
 #define TEST_ASSERT_EQ(actual, expected, desc) \
 	do { \
 		if ((actual) == (expected)) { \
-			printf("[PASS] %s\r\n", desc); \
+			sio::writef(fmt_buf_, "[PASS] %s\r\n", desc); \
 			test_pass_count++; \
 		} else { \
-			printf("[FAIL] %s (expected %ld, got %ld)\r\n", desc, (long)(expected), (long)(actual)); \
+			sio::writef(fmt_buf_, "[FAIL] %s (expected %ld, got %ld)\r\n", \
+				    desc, (long)(expected), (long)(actual)); \
 			test_fail_count++; \
 		} \
 	} while (0)
@@ -65,60 +66,60 @@ static __NO_RETURN void test_runner_func_(void*)
 	// Wait for system to stabilize
 	vTaskDelay(pdMS_TO_TICKS(100));
 
-	printf("\r\n");
-	printf("========================================\r\n");
-	printf("STM32ZERO Runtime Test Suite\r\n");
-	printf("========================================\r\n");
-	printf("\r\n");
+	sio::writef(fmt_buf_, "\r\n");
+	sio::writef(fmt_buf_, "========================================\r\n");
+	sio::writef(fmt_buf_, "STM32ZERO Runtime Test Suite\r\n");
+	sio::writef(fmt_buf_, "========================================\r\n");
+	sio::writef(fmt_buf_, "\r\n");
 
 	// Run all test modules
-	printf("--- Core Tests ---\r\n");
+	sio::writef(fmt_buf_, "--- Core Tests ---\r\n");
 	test_core_runtime();
-	printf("\r\n");
+	sio::writef(fmt_buf_, "\r\n");
 
-	printf("--- SIO Tests ---\r\n");
+	sio::writef(fmt_buf_, "--- SIO Tests ---\r\n");
 	test_sio_runtime();
-	printf("\r\n");
+	sio::writef(fmt_buf_, "\r\n");
 
-	printf("--- FreeRTOS Tests ---\r\n");
+	sio::writef(fmt_buf_, "--- FreeRTOS Tests ---\r\n");
 	test_freertos_runtime();
-	printf("\r\n");
+	sio::writef(fmt_buf_, "\r\n");
 
-	printf("--- USTIM Tests ---\r\n");
+	sio::writef(fmt_buf_, "--- USTIM Tests ---\r\n");
 	test_ustim_runtime();
-	printf("\r\n");
+	sio::writef(fmt_buf_, "\r\n");
 
 	// Print summary
-	printf("========================================\r\n");
-	printf("Test Summary\r\n");
-	printf("========================================\r\n");
-	printf("  Passed: %lu\r\n", test_pass_count);
-	printf("  Failed: %lu\r\n", test_fail_count);
-	printf("  Total:  %lu\r\n", test_pass_count + test_fail_count);
-	printf("========================================\r\n");
+	sio::writef(fmt_buf_, "========================================\r\n");
+	sio::writef(fmt_buf_, "Test Summary\r\n");
+	sio::writef(fmt_buf_, "========================================\r\n");
+	sio::writef(fmt_buf_, "  Passed: %lu\r\n", test_pass_count);
+	sio::writef(fmt_buf_, "  Failed: %lu\r\n", test_fail_count);
+	sio::writef(fmt_buf_, "  Total:  %lu\r\n", test_pass_count + test_fail_count);
+	sio::writef(fmt_buf_, "========================================\r\n");
 
 	if (test_fail_count == 0) {
-		printf("All tests PASSED!\r\n");
+		sio::writef(fmt_buf_, "All tests PASSED!\r\n");
 	} else {
-		printf("Some tests FAILED!\r\n");
+		sio::writef(fmt_buf_, "Some tests FAILED!\r\n");
 	}
 
-	printf("\r\n");
-	printf("Press any key to run interactive SIO tests...\r\n");
+	sio::writef(fmt_buf_, "\r\n");
+	sio::writef(fmt_buf_, "Press any key to run interactive SIO tests...\r\n");
 
 	// Wait for user input to run interactive tests
 	sio::wait(UINT32_MAX);
 
-	printf("\r\n--- Interactive SIO Tests ---\r\n");
-	printf("Type a line and press Enter:\r\n");
+	sio::writef(fmt_buf_, "\r\n--- Interactive SIO Tests ---\r\n");
+	sio::writef(fmt_buf_, "Type a line and press Enter:\r\n");
 
-	char buf[128];
+	static char buf[128];
 	while (true) {
 		int len = sio::readln(buf, sizeof(buf), 5000);
 		if (len >= 0) {
-			printf("Echo[%d]: %s\r\n", len, buf);
+			sio::writef(fmt_buf_, "Echo[%d]: %s\r\n", len, buf);
 		} else {
-			printf("(timeout - type something)\r\n");
+			sio::writef(fmt_buf_, "(timeout - type something)\r\n");
 		}
 	}
 }
@@ -148,13 +149,13 @@ extern "C" uint32_t test_get_fail_count(void)
 
 void test_report_pass(const char* desc)
 {
-	printf("[PASS] %s\r\n", desc);
+	sio::writef(fmt_buf_, "[PASS] %s\r\n", desc);
 	test_pass_count++;
 }
 
 void test_report_fail(const char* desc)
 {
-	printf("[FAIL] %s\r\n", desc);
+	sio::writef(fmt_buf_, "[FAIL] %s\r\n", desc);
 	test_fail_count++;
 }
 
@@ -162,38 +163,38 @@ void test_report_pass_eq(const char* desc, long expected, long actual)
 {
 	(void)expected;
 	(void)actual;
-	printf("[PASS] %s\r\n", desc);
+	sio::writef(fmt_buf_, "[PASS] %s\r\n", desc);
 	test_pass_count++;
 }
 
 void test_report_fail_eq(const char* desc, long expected, long actual)
 {
-	printf("[FAIL] %s (expected %ld, got %ld)\r\n", desc, expected, actual);
+	sio::writef(fmt_buf_, "[FAIL] %s (expected %ld, got %ld)\r\n", desc, expected, actual);
 	test_fail_count++;
 }
 
 void test_report_pass_range(const char* desc, long min, long max, long actual)
 {
-	printf("[PASS] %s (expected %ld~%ld, actual %ld)\r\n", desc, min, max, actual);
+	sio::writef(fmt_buf_, "[PASS] %s (expected %ld~%ld, actual %ld)\r\n", desc, min, max, actual);
 	test_pass_count++;
 }
 
 void test_report_fail_range(const char* desc, long min, long max, long actual)
 {
-	printf("[FAIL] %s (expected %ld~%ld, actual %ld)\r\n", desc, min, max, actual);
+	sio::writef(fmt_buf_, "[FAIL] %s (expected %ld~%ld, actual %ld)\r\n", desc, min, max, actual);
 	test_fail_count++;
 }
 
 void test_report_pass_stats(const char* desc, int count, long min, long max, long avg)
 {
-	printf("[PASS] %s x%d (min %ld, max %ld, avg %ld)\r\n", desc, count, min, max, avg);
+	sio::writef(fmt_buf_, "[PASS] %s x%d (min %ld, max %ld, avg %ld)\r\n", desc, count, min, max, avg);
 	test_pass_count++;
 }
 
 void test_report_fail_stats(const char* desc, int count, long min, long max, long avg,
 			    long expected_min, long expected_max)
 {
-	printf("[FAIL] %s x%d (min %ld, max %ld, avg %ld) expected %ld~%ld\r\n",
-	       desc, count, min, max, avg, expected_min, expected_max);
+	sio::writef(fmt_buf_, "[FAIL] %s x%d (min %ld, max %ld, avg %ld) expected %ld~%ld\r\n",
+		    desc, count, min, max, avg, expected_min, expected_max);
 	test_fail_count++;
 }
