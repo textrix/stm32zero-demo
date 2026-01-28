@@ -2,11 +2,8 @@
  * STM32ZERO Configuration for NUCLEO-H753ZI Demo
  */
 
-#ifndef STM32ZERO_CONF_H
-#define STM32ZERO_CONF_H
-
-// STM32H7 D-Cache line size
-#define STM32ZERO_CACHE_LINE_SIZE  32
+#ifndef __STM32ZERO_CONF_H__
+#define __STM32ZERO_CONF_H__
 
 // Serial I/O UART (NUCLEO-H753ZI uses USART3 via ST-Link VCP)
 #define STM32ZERO_SIO_UART  huart3
@@ -28,4 +25,7 @@
 #define STM32ZERO_USTIM_MID   4
 #define STM32ZERO_USTIM_HIGH  12
 
-#endif // STM32ZERO_CONF_H
+// Namespace alias
+#define STM32ZERO_NAMESPACE_ALIAS zero
+
+#endif // __STM32ZERO_CONF_H__
