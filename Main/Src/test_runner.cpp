@@ -54,17 +54,23 @@ extern "C" void test_core_runtime(void);
 extern "C" void test_sio_runtime(void);
 extern "C" void test_freertos_runtime(void);
 extern "C" void test_ustim_runtime(void);
+extern "C" void test_fdcan_runtime(void);
 
 //=============================================================================
 // Test Runner Task
 //=============================================================================
 
-STM32ZERO_DTCM static StaticTask<512> test_runner_task_;
+STM32ZERO_DTCM static StaticTask<1024> test_runner_task_;
 
 static __NO_RETURN void test_runner_func_(void*)
 {
 	// Wait for system to stabilize
 	vTaskDelay(pdMS_TO_TICKS(100));
+
+
+	sio::writef(fmt_buf_, "--- FDCAN Tests ---\r\n");
+	test_fdcan_runtime();
+	sio::writef(fmt_buf_, "\r\n");
 
 	sio::writef(fmt_buf_, "\r\n");
 	sio::writef(fmt_buf_, "========================================\r\n");

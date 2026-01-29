@@ -62,6 +62,12 @@ void Error_Handler(void);
 #define BTN_EXTI_IRQn EXTI15_10_IRQn
 #define LD1_Pin GPIO_PIN_0
 #define LD1_GPIO_Port GPIOB
+#define STBY1_Pin GPIO_PIN_0
+#define STBY1_GPIO_Port GPIOG
+#define FDCAN1_RX_EXTI_Pin GPIO_PIN_1
+#define FDCAN1_RX_EXTI_GPIO_Port GPIOG
+#define TP1_Pin GPIO_PIN_11
+#define TP1_GPIO_Port GPIOB
 #define USART1_TX_Pin GPIO_PIN_14
 #define USART1_TX_GPIO_Port GPIOB
 #define STLINK_TX_Pin GPIO_PIN_8
@@ -76,6 +82,8 @@ void Error_Handler(void);
 #define USB_OTG_FS_SOF_GPIO_Port GPIOA
 #define LD2_Pin GPIO_PIN_7
 #define LD2_GPIO_Port GPIOB
+#define TP0_Pin GPIO_PIN_0
+#define TP0_GPIO_Port GPIOE
 
 /* USER CODE BEGIN Private defines */
 

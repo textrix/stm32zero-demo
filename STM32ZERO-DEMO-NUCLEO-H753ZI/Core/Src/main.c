@@ -130,6 +130,7 @@ int main(void)
   MX_FDCAN1_Init();
   MX_USB_OTG_FS_USB_Init();
   MX_TIM8_Init();
+  MX_FDCAN2_Init();
   /* USER CODE BEGIN 2 */
   app_init();
 #if 0
@@ -282,6 +283,7 @@ void MPU_Config(void)
   MPU_InitStruct.Size = MPU_REGION_SIZE_128KB;
   MPU_InitStruct.SubRegionDisable = 0x0;
   MPU_InitStruct.TypeExtField = MPU_TEX_LEVEL1;
+  MPU_InitStruct.AccessPermission = MPU_REGION_FULL_ACCESS;
   MPU_InitStruct.IsShareable = MPU_ACCESS_NOT_SHAREABLE;
 
   HAL_MPU_ConfigRegion(&MPU_InitStruct);
@@ -292,7 +294,6 @@ void MPU_Config(void)
   MPU_InitStruct.BaseAddress = 0x30040000 /* SRAM3 */;
   MPU_InitStruct.Size = MPU_REGION_SIZE_512B;
   MPU_InitStruct.TypeExtField = MPU_TEX_LEVEL0;
-  MPU_InitStruct.AccessPermission = MPU_REGION_FULL_ACCESS;
   MPU_InitStruct.IsShareable = MPU_ACCESS_SHAREABLE;
   MPU_InitStruct.IsBufferable = MPU_ACCESS_BUFFERABLE;
 

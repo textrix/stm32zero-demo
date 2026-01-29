@@ -49,6 +49,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     # STM32ZERO library sources
     ${CMAKE_CURRENT_SOURCE_DIR}/../STM32ZERO/src/stm32zero-sio.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../STM32ZERO/src/stm32zero-uart.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/../STM32ZERO/src/stm32zero-fdcan.cpp
     # Shared Main sources
     ${CMAKE_CURRENT_SOURCE_DIR}/../Main/Src/app_init.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../Main/Src/test_stm32zero.cpp
@@ -60,6 +61,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/../Main/Src/test_ustim.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../Main/Src/test_ustim_template.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../Main/Src/test_tim_template.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/../Main/Src/test_fdcan.cpp
 )
 
 # Add include paths
