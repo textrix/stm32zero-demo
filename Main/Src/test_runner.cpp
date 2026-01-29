@@ -121,9 +121,9 @@ static __NO_RETURN void test_runner_func_(void*)
 
 	static char buf[128];
 	while (true) {
-		int len = sio::readln(buf, sizeof(buf), 5000);
-		if (len >= 0) {
-			sio::writef(fmt_buf_, "Echo[%d]: %s\r\n", len, buf);
+		auto result = sio::readln(buf, sizeof(buf), 5000);
+		if (result) {
+			sio::writef(fmt_buf_, "Echo[%d]: %s\r\n", result.count, buf);
 		} else {
 			sio::writef(fmt_buf_, "(timeout - type something)\r\n");
 		}

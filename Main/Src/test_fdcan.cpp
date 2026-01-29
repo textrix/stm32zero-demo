@@ -113,9 +113,9 @@ extern "C" void test_fdcan_runtime(void)
 		can1.set_data(Bitrate::M2);
 		can1.set_filter_id(FDCAN_RX_ID);
 
-		Status status = can1.open();
+		IoResult result = can1.open();
 
-		if (status == Status::OK && can1.is_open()) {
+		if (result.is_ok() && can1.is_open()) {
 			test_report_pass("FDCAN open (FD_BRS 500K/2M)");
 		} else {
 			test_report_fail("FDCAN open (FD_BRS 500K/2M)");
@@ -151,16 +151,16 @@ extern "C" void test_fdcan_runtime(void)
 		}
 
 		// Try to receive CAN message
-		Status status = can1.read(&rx_msg, FDCAN_TIMEOUT_MS);
+		IoResult result = can1.read(&rx_msg, FDCAN_TIMEOUT_MS);
 
-		if (status == Status::OK) {
+		if (result.is_ok()) {
 			rx_count++;
 
 			// Echo back with offset ID
 			uint16_t echo_id = static_cast<uint16_t>(rx_msg.id + FDCAN_TX_ID_OFFSET);
-			Status tx_status = can1.write(echo_id, rx_msg.data, rx_msg.length, FDCAN_TIMEOUT_MS);
+			IoResult tx_result = can1.write(echo_id, rx_msg.data, rx_msg.length, FDCAN_TIMEOUT_MS);
 
-			if (tx_status == Status::OK) {
+			if (tx_result.is_ok()) {
 				tx_count++;
 			}
 		}

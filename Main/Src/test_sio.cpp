@@ -57,10 +57,10 @@ extern void test_report_fail_eq(const char* desc, long expected, long actual);
 static void test_sio_init_called(void)
 {
 	// sio::init() should have been called in app_init()
-	// We can verify by checking that write() works (returns > 0)
+	// We can verify by checking that write() works (returns OK)
 	const char* msg = "SIO init test\r\n";
-	int written = sio::write(msg, strlen(msg));
-	TEST_ASSERT(written > 0, "sio::init() already called (write works)");
+	auto result = sio::write(msg, strlen(msg));
+	TEST_ASSERT(result.is_ok() && result.count > 0, "sio::init() already called (write works)");
 }
 
 //=============================================================================
@@ -71,22 +71,22 @@ static void test_sio_write_basic(void)
 {
 	const char* msg = "Hello, STM32ZERO!\r\n";
 	int len = strlen(msg);
-	int written = sio::write(msg, len);
+	auto result = sio::write(msg, len);
 
-	TEST_ASSERT_EQ(written, len, "sio::write() returns correct length");
+	TEST_ASSERT_EQ(result.count, len, "sio::write() returns correct length");
 }
 
 static void test_sio_write_empty(void)
 {
-	int written = sio::write("", 0);
-	TEST_ASSERT_EQ(written, 0, "sio::write() empty string returns 0");
+	auto result = sio::write("", 0);
+	TEST_ASSERT_EQ(result.count, 0, "sio::write() empty string returns 0");
 }
 
 static void test_sio_write_binary(void)
 {
 	uint8_t data[] = {0x00, 0x01, 0x02, 0xFF, 0xFE, 0xFD};
-	int written = sio::write(data, sizeof(data));
-	TEST_ASSERT_EQ(written, (int)sizeof(data), "sio::write() binary data");
+	auto result = sio::write(data, sizeof(data));
+	TEST_ASSERT_EQ(result.count, (int)sizeof(data), "sio::write() binary data");
 }
 
 //=============================================================================
@@ -97,15 +97,15 @@ static void test_sio_flush(void)
 {
 	// Write some data and flush
 	sio::write("Flush test\r\n", 12);
-	bool flushed = sio::flush(1000);  // 1 second timeout
+	auto flushed = sio::flush(1000);  // 1 second timeout
 
-	// flush() should return true if all data sent, false on timeout
+	// flush() should return OK if all data sent
 	// Either way, it should not crash
 	TEST_ASSERT(true, "sio::flush() called without crash");
 
-	// writable() should return a valid bool (doesn't crash)
-	bool ready = sio::writable();
-	TEST_ASSERT(ready || !ready, "sio::writable() returns valid bool");
+	// writable() should return valid IoResult (doesn't crash)
+	auto ready = sio::writable();
+	TEST_ASSERT(ready.is_ok() || !ready.is_ok(), "sio::writable() returns valid IoResult");
 
 	(void)flushed;  // suppress unused warning
 }
@@ -122,9 +122,9 @@ static void test_sio_read_empty(void)
 		sio::read(buf, sizeof(buf));
 	}
 
-	// Now read should return 0 (empty buffer)
-	int read_count = sio::read(buf, sizeof(buf));
-	TEST_ASSERT_EQ(read_count, 0, "sio::read() returns 0 when empty");
+	// Now read should return BUFFER_EMPTY with count=0
+	auto result = sio::read(buf, sizeof(buf));
+	TEST_ASSERT_EQ(result.count, 0, "sio::read() returns count=0 when empty");
 }
 
 static void test_sio_readable(void)
@@ -135,7 +135,7 @@ static void test_sio_readable(void)
 		sio::read(buf, sizeof(buf));
 	}
 
-	TEST_ASSERT(!sio::readable(), "sio::readable() returns false when empty");
+	TEST_ASSERT(!sio::readable(), "sio::readable() returns !OK when empty");
 }
 
 //=============================================================================
@@ -150,12 +150,12 @@ static void test_sio_read_timeout_expired(void)
 		sio::read(buf, sizeof(buf));
 	}
 
-	// Try to read with short timeout - should return 0 (timeout)
+	// Try to read with short timeout - should return TIMEOUT with count=0
 	uint32_t start = xTaskGetTickCount();
-	int read_count = sio::read(buf, 10, 50);  // 50ms timeout
+	auto result = sio::read(buf, 10, 50);  // 50ms timeout
 	uint32_t elapsed = xTaskGetTickCount() - start;
 
-	TEST_ASSERT_EQ(read_count, 0, "sio::read(timeout) returns 0 on timeout");
+	TEST_ASSERT_EQ(result.count, 0, "sio::read(timeout) returns count=0 on timeout");
 	TEST_ASSERT(elapsed >= 40 && elapsed <= 100, "sio::read(timeout) waits ~50ms");
 }
 
@@ -173,10 +173,10 @@ static void test_sio_wait_readable_timeout(void)
 
 	// wait_readable() should timeout
 	uint32_t start = xTaskGetTickCount();
-	bool data_ready = sio::wait_readable(50);  // 50ms timeout
+	auto result = sio::wait_readable(50);  // 50ms timeout
 	uint32_t elapsed = xTaskGetTickCount() - start;
 
-	TEST_ASSERT(!data_ready, "sio::wait_readable() returns false on timeout");
+	TEST_ASSERT(!result, "sio::wait_readable() returns !OK on timeout");
 	TEST_ASSERT(elapsed >= 40 && elapsed <= 100, "sio::wait_readable() waits ~50ms");
 }
 
@@ -194,10 +194,10 @@ static void test_sio_readln_timeout(void)
 
 	// readln() should timeout
 	uint32_t start = xTaskGetTickCount();
-	int len = sio::readln(buf, sizeof(buf), 50);  // 50ms timeout
+	auto result = sio::readln(buf, sizeof(buf), 50);  // 50ms timeout
 	uint32_t elapsed = xTaskGetTickCount() - start;
 
-	TEST_ASSERT(len < 0, "sio::readln() returns -1 on timeout with no data");
+	TEST_ASSERT(!result, "sio::readln() returns !OK on timeout with no data");
 	TEST_ASSERT(elapsed >= 40 && elapsed <= 100, "sio::readln() waits ~50ms");
 }
 
