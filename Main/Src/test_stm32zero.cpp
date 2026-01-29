@@ -113,6 +113,7 @@ static_assert(align_up<64>(65) == 128, "65 aligned to 64");
 // cache_align() Tests
 //=============================================================================
 
+#ifdef __SCB_DCACHE_LINE_SIZE
 static_assert(cache_line_size == 32, "H7 cache line is 32 bytes");
 
 static_assert(cache_align(0) == 0, "0 cache aligned");
@@ -124,6 +125,7 @@ static_assert(cache_align(64) == 64, "64 cache aligned (exact)");
 static_assert(cache_align(65) == 96, "65 cache aligned");
 static_assert(cache_align(100) == 128, "100 cache aligned");
 static_assert(cache_align(128) == 128, "128 cache aligned (exact)");
+#endif
 
 //=============================================================================
 // DmaBuffer Tests
@@ -138,6 +140,7 @@ static_assert(DmaBuffer<100>::size() == 100, "DmaBuffer<100>::size()");
 static_assert(DmaBuffer<128>::size() == 128, "DmaBuffer<128>::size()");
 
 // aligned_size() test (cache line = 32)
+#ifdef __SCB_DCACHE_LINE_SIZE
 static_assert(DmaBuffer<1>::aligned_size() == 32, "DmaBuffer<1>::aligned_size()");
 static_assert(DmaBuffer<32>::aligned_size() == 32, "DmaBuffer<32>::aligned_size()");
 static_assert(DmaBuffer<33>::aligned_size() == 64, "DmaBuffer<33>::aligned_size()");
@@ -146,6 +149,7 @@ static_assert(DmaBuffer<64>::aligned_size() == 64, "DmaBuffer<64>::aligned_size(
 static_assert(DmaBuffer<65>::aligned_size() == 96, "DmaBuffer<65>::aligned_size()");
 static_assert(DmaBuffer<100>::aligned_size() == 128, "DmaBuffer<100>::aligned_size()");
 static_assert(DmaBuffer<128>::aligned_size() == 128, "DmaBuffer<128>::aligned_size()");
+#endif
 
 //=============================================================================
 // FreeRTOS StaticTask Tests

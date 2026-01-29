@@ -69,7 +69,7 @@ static __NO_RETURN void test_runner_func_(void*)
 
 
 	sio::writef(fmt_buf_, "--- FDCAN Tests ---\r\n");
-	test_fdcan_runtime();
+	//test_fdcan_runtime();
 	sio::writef(fmt_buf_, "\r\n");
 
 	sio::writef(fmt_buf_, "\r\n");

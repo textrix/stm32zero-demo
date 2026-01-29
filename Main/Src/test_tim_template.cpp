@@ -31,18 +31,26 @@ struct TimerTest2 {
 
 // Instantiation test
 using test1 = TimerTest1<TIM<2>>;
+#ifdef TIM4
 using test2 = TimerTest2<TIM<2>, TIM<4>>;
+#endif
 
 // Compile-time verification
 static_assert(test1::bits == 32, "TIM2 should be 32-bit");
+#ifdef TIM4
 static_assert(test2::total_bits == 48, "TIM2+TIM4 should be 48-bit");
+#endif
 
 // Force instantiation
 volatile uint32_t dummy1 = 0;
+#ifdef TIM4
 volatile uint64_t dummy2 = 0;
+#endif
 
 void test_tim_template()
 {
 	dummy1 = test1::get_cnt();
+#ifdef TIM4
 	dummy2 = test2::get();
+#endif
 }

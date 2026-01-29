@@ -16,6 +16,16 @@ NUCLEO-H753ZI 개발 보드 (STM32H753ZIT6, Cortex-M7) 데모 프로젝트.
 - DTCM RAM에 FreeRTOS 정적 태스크 생성
 - 섹션 배치 매크로 (`STM32ZERO_DTCM`)
 
+### WeACT-H503
+
+WeACT STM32H503 개발 보드 (STM32H503CBT6, Cortex-M33) 데모 프로젝트.
+
+**데모 기능:**
+- TIM2/TIM3 캐스케이드 연결 마이크로초 타이머 (`ustim`)
+- USART1 DMA 기반 시리얼 I/O (`sio`)
+- FreeRTOS 정적 태스크 생성
+- H5 시리즈 호환성 (캐시 없음, 단순화된 메모리 모델)
+
 ## 런타임 테스트
 
 실제 하드웨어에서 라이브러리 기능을 검증하는 런타임 테스트 스위트 포함.
@@ -48,7 +58,11 @@ STM32ZERO-DEMO/
 │       ├── test_freertos.cpp   # FreeRTOS 래퍼 테스트
 │       └── test_ustim.cpp      # 마이크로초 타이머 테스트
 ├── STM32ZERO/                   # 라이브러리 서브모듈
-└── STM32ZERO-DEMO-NUCLEO-H753ZI/
+├── STM32ZERO-DEMO-NUCLEO-H753ZI/
+│   ├── Core/                    # STM32CubeMX 생성 코드
+│   ├── Drivers/                 # HAL 드라이버
+│   └── CMakeLists.txt           # CMake 빌드 설정
+└── STM32ZERO-DEMO-WeACT-H503/
     ├── Core/                    # STM32CubeMX 생성 코드
     ├── Drivers/                 # HAL 드라이버
     └── CMakeLists.txt           # CMake 빌드 설정

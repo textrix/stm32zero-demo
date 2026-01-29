@@ -16,6 +16,16 @@ Demo project for NUCLEO-H753ZI development board (STM32H753ZIT6, Cortex-M7).
 - FreeRTOS static task creation in DTCM RAM
 - Section placement macros (`STM32ZERO_DTCM`)
 
+### WeACT-H503
+
+Demo project for WeACT STM32H503 development board (STM32H503CBT6, Cortex-M33).
+
+**Features demonstrated:**
+- Microsecond timer (`ustim`) with TIM2/TIM3 cascade
+- DMA-based serial I/O via USART1 (`sio`)
+- FreeRTOS static task creation
+- H5 series compatibility (no cache, simplified memory model)
+
 ## Runtime Tests
 
 The demo includes a comprehensive runtime test suite that validates library functionality on actual hardware.
@@ -48,7 +58,11 @@ STM32ZERO-DEMO/
 │       ├── test_freertos.cpp   # FreeRTOS wrapper tests
 │       └── test_ustim.cpp      # Microsecond timer tests
 ├── STM32ZERO/                   # Library submodule
-└── STM32ZERO-DEMO-NUCLEO-H753ZI/
+├── STM32ZERO-DEMO-NUCLEO-H753ZI/
+│   ├── Core/                    # STM32CubeMX generated code
+│   ├── Drivers/                 # HAL drivers
+│   └── CMakeLists.txt           # CMake build configuration
+└── STM32ZERO-DEMO-WeACT-H503/
     ├── Core/                    # STM32CubeMX generated code
     ├── Drivers/                 # HAL drivers
     └── CMakeLists.txt           # CMake build configuration

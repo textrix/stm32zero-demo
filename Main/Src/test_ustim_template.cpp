@@ -15,6 +15,22 @@
 using namespace stm32zero;
 
 //=============================================================================
+// Timer availability macros
+//=============================================================================
+
+#if defined(TIM5) && defined(TIM8)
+#define HAS_USTIM_2T
+#endif
+
+#if defined(TIM3) && defined(TIM4) && defined(TIM12)
+#define HAS_USTIM_3T
+#endif
+
+#if defined(HAS_USTIM_2T) && defined(HAS_USTIM_3T)
+#define HAS_USTIM_BOTH
+#endif
+
+//=============================================================================
 // Test Helper Functions (defined in test_runner.cpp)
 //=============================================================================
 
@@ -34,26 +50,44 @@ extern void test_report_fail(const char* desc);
 // Compile-time tests (static_assert)
 //=============================================================================
 
+#ifdef TIM2
 static_assert(TIM<2>::bits == 32, "TIM2 must be 32-bit");
+#endif
+#ifdef TIM3
 static_assert(TIM<3>::bits == 16, "TIM3 must be 16-bit");
+#endif
+#ifdef TIM4
 static_assert(TIM<4>::bits == 16, "TIM4 must be 16-bit");
+#endif
+#ifdef TIM5
 static_assert(TIM<5>::bits == 32, "TIM5 must be 32-bit");
+#endif
+#ifdef TIM8
 static_assert(TIM<8>::bits == 16, "TIM8 must be 16-bit");
+#endif
+#ifdef TIM12
 static_assert(TIM<12>::bits == 16, "TIM12 must be 16-bit");
+#endif
 
 //=============================================================================
 // Timer configurations
 //=============================================================================
 
+#ifdef HAS_USTIM_2T
 // 32+16 mode: TIM5(32-bit) -> TIM8(16-bit)
 using ustim_2t = Ustim<TIM<5>, TIM<8>>;
+#endif
 
+#ifdef HAS_USTIM_3T
 // 16+16+16 mode: TIM3 -> TIM4 -> TIM12
 using ustim_3t = Ustim<TIM<3>, TIM<4>, TIM<12>>;
+#endif
 
 //=============================================================================
 // 2-Timer Mode Tests (32+16)
 //=============================================================================
+
+#ifdef HAS_USTIM_2T
 
 static void test_ustim_2t_get_monotonic(void)
 {
@@ -98,9 +132,13 @@ static void test_ustim_2t_elapsed_100ms(void)
 		"ustim_2t::elapsed() ~100ms (90000-120000 us)");
 }
 
+#endif // HAS_USTIM_2T
+
 //=============================================================================
 // 3-Timer Mode Tests (16+16+16)
 //=============================================================================
+
+#ifdef HAS_USTIM_3T
 
 static void test_ustim_3t_get_monotonic(void)
 {
@@ -145,9 +183,13 @@ static void test_ustim_3t_elapsed_100ms(void)
 		"ustim_3t::elapsed() ~100ms (90000-120000 us)");
 }
 
+#endif // HAS_USTIM_3T
+
 //=============================================================================
 // Cross-mode comparison test
 //=============================================================================
+
+#ifdef HAS_USTIM_BOTH
 
 static void test_ustim_both_modes_similar(void)
 {
@@ -166,28 +208,34 @@ static void test_ustim_both_modes_similar(void)
 	TEST_ASSERT(diff < 5000, "2t and 3t modes measure similar time (<5ms diff)");
 }
 
+#endif // HAS_USTIM_BOTH
+
 //=============================================================================
 // Entry Point
 //=============================================================================
 
 extern "C" void test_ustim_template(void)
 {
-	// Initialize both timer chains
+#ifdef HAS_USTIM_2T
 	ustim_2t::init();
-	ustim_3t::init();
-
 	printf("\r\n--- 2-Timer Mode (32+16: TIM5->TIM8) ---\r\n");
 	test_ustim_2t_get_monotonic();
 	test_ustim_2t_get_increases();
 	test_ustim_2t_elapsed_10ms();
 	test_ustim_2t_elapsed_100ms();
+#endif
 
+#ifdef HAS_USTIM_3T
+	ustim_3t::init();
 	printf("\r\n--- 3-Timer Mode (16+16+16: TIM3->TIM4->TIM12) ---\r\n");
 	test_ustim_3t_get_monotonic();
 	test_ustim_3t_get_increases();
 	test_ustim_3t_elapsed_10ms();
 	test_ustim_3t_elapsed_100ms();
+#endif
 
+#ifdef HAS_USTIM_BOTH
 	printf("\r\n--- Cross-mode comparison ---\r\n");
 	test_ustim_both_modes_similar();
+#endif
 }
