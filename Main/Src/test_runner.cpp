@@ -114,7 +114,7 @@ static __NO_RETURN void test_runner_func_(void*)
 	sio::writef(fmt_buf_, "Press any key to run interactive SIO tests...\r\n");
 
 	// Wait for user input to run interactive tests
-	sio::wait(UINT32_MAX);
+	sio::wait_readable(UINT32_MAX);
 
 	sio::writef(fmt_buf_, "\r\n--- Interactive SIO Tests ---\r\n");
 	sio::writef(fmt_buf_, "Type a line and press Enter:\r\n");

@@ -6,8 +6,8 @@
  *   - write() data transmission
  *   - read() non-blocking/timeout
  *   - readln() line reading
- *   - wait() / available()
- *   - tx_water_mark() / rx_water_mark()
+ *   - readable() / writable()
+ *   - write_peak() / read_peak()
  *
  * Note: Some tests require manual verification via terminal.
  */
@@ -90,26 +90,22 @@ static void test_sio_write_binary(void)
 }
 
 //=============================================================================
-// sio::flush() and is_tx_busy() Tests
+// sio::flush() and writable() Tests
 //=============================================================================
 
 static void test_sio_flush(void)
 {
 	// Write some data and flush
 	sio::write("Flush test\r\n", 12);
-	bool flushed = sio::flush();
+	bool flushed = sio::flush(1000);  // 1 second timeout
 
-	// flush() should return true if transfer started or false if already busy
+	// flush() should return true if all data sent, false on timeout
 	// Either way, it should not crash
 	TEST_ASSERT(true, "sio::flush() called without crash");
 
-	// is_tx_busy() should return a valid bool (doesn't crash)
-	bool busy = sio::is_tx_busy();
-	TEST_ASSERT(busy || !busy, "sio::is_tx_busy() returns valid bool");
-
-	// tx_pending() should return a valid value
-	uint16_t pending = sio::tx_pending();
-	TEST_ASSERT(pending <= 8192, "sio::tx_pending() returns reasonable value");
+	// writable() should return a valid bool (doesn't crash)
+	bool ready = sio::writable();
+	TEST_ASSERT(ready || !ready, "sio::writable() returns valid bool");
 
 	(void)flushed;  // suppress unused warning
 }
@@ -122,7 +118,7 @@ static void test_sio_read_empty(void)
 {
 	// Clear any pending data first
 	char buf[64];
-	while (sio::available() > 0) {
+	while (sio::readable()) {
 		sio::read(buf, sizeof(buf));
 	}
 
@@ -131,26 +127,15 @@ static void test_sio_read_empty(void)
 	TEST_ASSERT_EQ(read_count, 0, "sio::read() returns 0 when empty");
 }
 
-static void test_sio_available_empty(void)
+static void test_sio_readable(void)
 {
 	// Clear buffer
 	char buf[64];
-	while (sio::available() > 0) {
+	while (sio::readable()) {
 		sio::read(buf, sizeof(buf));
 	}
 
-	TEST_ASSERT_EQ(sio::available(), 0, "sio::available() returns 0 when empty");
-}
-
-static void test_sio_is_empty(void)
-{
-	// Clear buffer
-	char buf[64];
-	while (!sio::is_empty()) {
-		sio::read(buf, sizeof(buf));
-	}
-
-	TEST_ASSERT(sio::is_empty(), "sio::is_empty() returns true when empty");
+	TEST_ASSERT(!sio::readable(), "sio::readable() returns false when empty");
 }
 
 //=============================================================================
@@ -161,7 +146,7 @@ static void test_sio_read_timeout_expired(void)
 {
 	// Clear buffer first
 	char buf[64];
-	while (sio::available() > 0) {
+	while (sio::readable()) {
 		sio::read(buf, sizeof(buf));
 	}
 
@@ -175,24 +160,24 @@ static void test_sio_read_timeout_expired(void)
 }
 
 //=============================================================================
-// sio::wait() Tests
+// sio::wait_readable() Tests
 //=============================================================================
 
-static void test_sio_wait_timeout(void)
+static void test_sio_wait_readable_timeout(void)
 {
 	// Clear buffer first
 	char buf[64];
-	while (sio::available() > 0) {
+	while (sio::readable()) {
 		sio::read(buf, sizeof(buf));
 	}
 
-	// wait() should timeout
+	// wait_readable() should timeout
 	uint32_t start = xTaskGetTickCount();
-	bool data_ready = sio::wait(50);  // 50ms timeout
+	bool data_ready = sio::wait_readable(50);  // 50ms timeout
 	uint32_t elapsed = xTaskGetTickCount() - start;
 
-	TEST_ASSERT(!data_ready, "sio::wait() returns false on timeout");
-	TEST_ASSERT(elapsed >= 40 && elapsed <= 100, "sio::wait() waits ~50ms");
+	TEST_ASSERT(!data_ready, "sio::wait_readable() returns false on timeout");
+	TEST_ASSERT(elapsed >= 40 && elapsed <= 100, "sio::wait_readable() waits ~50ms");
 }
 
 //=============================================================================
@@ -203,7 +188,7 @@ static void test_sio_readln_timeout(void)
 {
 	// Clear buffer first
 	char buf[64];
-	while (sio::available() > 0) {
+	while (sio::readable()) {
 		sio::read(buf, sizeof(buf));
 	}
 
@@ -217,28 +202,28 @@ static void test_sio_readln_timeout(void)
 }
 
 //=============================================================================
-// Water Mark Tests
+// Peak Usage Tests
 //=============================================================================
 
-static void test_sio_tx_water_mark(void)
+static void test_sio_write_peak(void)
 {
-	// Write a large amount of data to increase water mark
+	// Write a large amount of data to increase peak
 	char buf[256];
 	memset(buf, 'X', sizeof(buf));
 	sio::write(buf, sizeof(buf));
-	sio::flush();
+	sio::flush(1000);  // 1 second timeout
 
-	uint16_t water_mark = sio::tx_water_mark();
-	// Water mark should be at least the size we wrote (or close to it)
-	TEST_ASSERT(water_mark >= 100, "sio::tx_water_mark() > 100 after write");
+	uint16_t peak = sio::write_peak();
+	// Peak should be at least the size we wrote (or close to it)
+	TEST_ASSERT(peak >= 100, "sio::write_peak() > 100 after write");
 }
 
-static void test_sio_rx_water_mark(void)
+static void test_sio_read_peak(void)
 {
-	// RX water mark depends on incoming data
+	// Read peak depends on incoming data
 	// Just verify it doesn't crash and returns reasonable value
-	uint16_t water_mark = sio::rx_water_mark();
-	TEST_ASSERT(water_mark < 65535, "sio::rx_water_mark() returns valid value");
+	uint16_t peak = sio::read_peak();
+	TEST_ASSERT(peak < 65535, "sio::read_peak() returns valid value");
 }
 
 //=============================================================================
@@ -260,21 +245,20 @@ extern "C" void test_sio_runtime(void)
 
 	// Read tests (non-blocking)
 	test_sio_read_empty();
-	test_sio_available_empty();
-	test_sio_is_empty();
+	test_sio_readable();
 
 	// Read with timeout
 	test_sio_read_timeout_expired();
 
-	// wait() test
-	test_sio_wait_timeout();
+	// wait_readable() test
+	test_sio_wait_readable_timeout();
 
 	// readln() test
 	test_sio_readln_timeout();
 
-	// Water mark tests
-	test_sio_tx_water_mark();
-	test_sio_rx_water_mark();
+	// Peak usage tests
+	test_sio_write_peak();
+	test_sio_read_peak();
 
 	printf("\r\n");
 	printf("Note: Interactive sio::readln() test available after summary.\r\n");

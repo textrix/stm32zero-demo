@@ -143,7 +143,7 @@ extern "C" void test_fdcan_runtime(void)
 
 	while (true) {
 		// Check for key press (non-blocking)
-		if (!sio::is_empty()) {
+		if (sio::readable()) {
 			// Consume the key
 			char c;
 			sio::read(&c, 1);
@@ -151,14 +151,14 @@ extern "C" void test_fdcan_runtime(void)
 		}
 
 		// Try to receive CAN message
-		Status status = can1.recv(&rx_msg, FDCAN_TIMEOUT_MS);
+		Status status = can1.read(&rx_msg, FDCAN_TIMEOUT_MS);
 
 		if (status == Status::OK) {
 			rx_count++;
 
 			// Echo back with offset ID
 			uint16_t echo_id = static_cast<uint16_t>(rx_msg.id + FDCAN_TX_ID_OFFSET);
-			Status tx_status = can1.send(echo_id, rx_msg.data, rx_msg.length, FDCAN_TIMEOUT_MS);
+			Status tx_status = can1.write(echo_id, rx_msg.data, rx_msg.length, FDCAN_TIMEOUT_MS);
 
 			if (tx_status == Status::OK) {
 				tx_count++;
