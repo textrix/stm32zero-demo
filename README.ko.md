@@ -16,6 +16,11 @@ NUCLEO-H753ZI 개발 보드 (STM32H753ZIT6, Cortex-M7) 데모 프로젝트.
 - DTCM RAM에 FreeRTOS 정적 태스크 생성
 - 섹션 배치 매크로 (`STM32ZERO_DTCM`)
 
+**문서:** [README (English)](STM32ZERO-DEMO-NUCLEO-H753ZI/README.md) | [README](STM32ZERO-DEMO-NUCLEO-H753ZI/README.ko.md)
+- H7 메모리 아키텍처 (DTCMRAM, AXI SRAM, SRAM1-4)
+- 캐시 & MPU 설정
+- 수정된 링커 스크립트 및 스타트업 파일
+
 ### WeACT-H503
 
 WeACT STM32H503 개발 보드 (STM32H503CBT6, Cortex-M33) 데모 프로젝트.
@@ -25,6 +30,11 @@ WeACT STM32H503 개발 보드 (STM32H503CBT6, Cortex-M33) 데모 프로젝트.
 - USART1 DMA 기반 시리얼 I/O (`sio`)
 - FreeRTOS 정적 태스크 생성
 - H5 시리즈 호환성 (캐시 없음, 단순화된 메모리 모델)
+
+**문서:** [README (English)](STM32ZERO-DEMO-WeACT-H503/README.md) | [README](STM32ZERO-DEMO-WeACT-H503/README.ko.md)
+- 단순한 메모리 모델 (단일 RAM 영역)
+- STM32ZERO 섹션 매크로 호환성
+- 표준 링커 스크립트 (변경 없음)
 
 ## 런타임 테스트
 

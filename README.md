@@ -16,6 +16,11 @@ Demo project for NUCLEO-H753ZI development board (STM32H753ZIT6, Cortex-M7).
 - FreeRTOS static task creation in DTCM RAM
 - Section placement macros (`STM32ZERO_DTCM`)
 
+**Documentation:** [README](STM32ZERO-DEMO-NUCLEO-H753ZI/README.md) | [README (한국어)](STM32ZERO-DEMO-NUCLEO-H753ZI/README.ko.md)
+- H7 memory architecture (DTCMRAM, AXI SRAM, SRAM1-4)
+- Cache & MPU configuration
+- Modified linker scripts and startup files
+
 ### WeACT-H503
 
 Demo project for WeACT STM32H503 development board (STM32H503CBT6, Cortex-M33).
@@ -25,6 +30,11 @@ Demo project for WeACT STM32H503 development board (STM32H503CBT6, Cortex-M33).
 - DMA-based serial I/O via USART1 (`sio`)
 - FreeRTOS static task creation
 - H5 series compatibility (no cache, simplified memory model)
+
+**Documentation:** [README](STM32ZERO-DEMO-WeACT-H503/README.md) | [README (한국어)](STM32ZERO-DEMO-WeACT-H503/README.ko.md)
+- Simple memory model (single RAM region)
+- STM32ZERO section macro compatibility
+- Standard linker scripts (no modifications)
 
 ## Runtime Tests
 
