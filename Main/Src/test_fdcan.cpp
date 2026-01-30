@@ -13,7 +13,15 @@
  */
 
 #include "main.h"
+
+#if defined(HAL_FDCAN_MODULE_ENABLED)
+
+#if __has_include("fdcan.h")
 #include "fdcan.h"
+#else
+// FDCAN handle declaration when fdcan.h is not available
+extern FDCAN_HandleTypeDef hfdcan1;
+#endif
 #include "stm32zero.hpp"
 #include "stm32zero-sio.hpp"
 #include "stm32zero-fdcan.hpp"
@@ -191,3 +199,5 @@ extern "C" void test_fdcan_runtime(void)
 
 	test_report_pass("FDCAN echo loop completed");
 }
+
+#endif // HAL_FDCAN_MODULE_ENABLED
