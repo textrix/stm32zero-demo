@@ -1,11 +1,11 @@
 /**
- * STM32ZERO Configuration for NUCLEO-H753ZI Demo
+ * STM32ZERO Configuration for WeACT-H503 Demo
  */
 
 #ifndef __STM32ZERO_CONF_H__
 #define __STM32ZERO_CONF_H__
 
-// Serial I/O UART (NUCLEO-H753ZI uses USART3 via ST-Link VCP)
+// Serial I/O UART (WeACT-H503 uses USART1)
 #define STM32ZERO_SIO_UART  huart1
 
 // RX ring buffer size
@@ -19,6 +19,11 @@
 
 // FreeRTOS enabled
 #define STM32ZERO_RTOS_FREERTOS    1
+
+// FDCAN clock frequency (from CubeMX: RCC.FDCANFreq_Value)
+// Defining this saves ~2-3KB by avoiding HAL_RCCEx_GetPeriphCLKFreq().
+// In Debug builds, this value is verified against actual clock.
+#define STM32ZERO_FDCAN_CLOCK_HZ   80000000UL
 
 // Microsecond timer (48-bit, 16+16+16 cascaded timers)
 #define STM32ZERO_USTIM_LOW   2

@@ -20,6 +20,11 @@
 // FreeRTOS enabled
 #define STM32ZERO_RTOS_FREERTOS    1
 
+// FDCAN clock frequency (from CubeMX: RCC.FDCANFreq_Value)
+// Defining this saves ~2-3KB by avoiding HAL_RCCEx_GetPeriphCLKFreq().
+// In Debug builds, this value is verified against actual clock.
+#define STM32ZERO_FDCAN_CLOCK_HZ   80000000UL
+
 // Microsecond timer (48-bit, 16+16+16 cascaded timers)
 #define STM32ZERO_USTIM_LOW   3
 #define STM32ZERO_USTIM_MID   4
