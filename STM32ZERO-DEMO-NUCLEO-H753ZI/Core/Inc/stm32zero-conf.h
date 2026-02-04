@@ -5,8 +5,8 @@
 #ifndef __STM32ZERO_CONF_H__
 #define __STM32ZERO_CONF_H__
 
-// Serial I/O UART (NUCLEO-H753ZI uses USART3 via ST-Link VCP)
-#define STM32ZERO_SIO_UART  huart3
+// Serial I/O UART number (NUCLEO-H753ZI uses USART3 via ST-Link VCP)
+#define STM32ZERO_SIO_NUM  3
 
 // RX ring buffer size
 #define STM32ZERO_SIO_RX_SIZE  256

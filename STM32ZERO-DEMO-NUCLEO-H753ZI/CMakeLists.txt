@@ -47,6 +47,7 @@ target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
 # Add sources to executable
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     # STM32ZERO library sources
+    ${CMAKE_CURRENT_SOURCE_DIR}/../STM32ZERO/src/stm32zero-assert.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../STM32ZERO/src/stm32zero-sio.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../STM32ZERO/src/stm32zero-uart.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../STM32ZERO/src/stm32zero-fdcan.cpp

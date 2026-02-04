@@ -5,8 +5,8 @@
 #ifndef __STM32ZERO_CONF_H__
 #define __STM32ZERO_CONF_H__
 
-// Serial I/O UART (WeACT-H503 uses USART1)
-#define STM32ZERO_SIO_UART  huart1
+// Serial I/O UART number (WeACT-H503 uses USART1)
+#define STM32ZERO_SIO_NUM  1
 
 // RX ring buffer size
 #define STM32ZERO_SIO_RX_SIZE  256
